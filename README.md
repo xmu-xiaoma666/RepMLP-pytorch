@@ -1,6 +1,8 @@
 # RepMLP-pytorch
   Pytorch implemention of [RepMLP: Re-parameterizing Convolutions into Fully-connected Layers for Image Recognition](https://arxiv.org/pdf/2105.01883v1.pdf)
 
+  We add some annotations to make code easy to read!!!
+
 ### Overview
 
 ![](./repmlp.png)
@@ -29,6 +31,6 @@ x=torch.randn(N,C,H,W)
 y=repmlp(x)
 ```
 
-### reference
+### Reference
 
 [Official RepMLP](https://github.com/DingXiaoH/RepMLP/blob/main/repmlp.py)
