@@ -29,3 +29,6 @@ x=torch.randn(N,C,H,W)
 y=repmlp(x)
 ```
 
+### reference
+
+[Official RepMLP](https://github.com/DingXiaoH/RepMLP/blob/main/repmlp.py)
