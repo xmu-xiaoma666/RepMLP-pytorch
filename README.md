@@ -1,7 +1,9 @@
 # RepMLP-pytorch
   Pytorch implemention of [RepMLP: Re-parameterizing Convolutions into Fully-connected Layers for Image Recognition](https://arxiv.org/pdf/2105.01883v1.pdf)
 
-  We add some annotations to make code easy to read!!!
+  We add some annotations to make code easy to read !!!
+
+  Noting that dimention of input features $N$ should equal to dimention of output features $O$. Otherwise, the results of inference and training will be different !!!
 
 ### Overview
 

@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from collections import OrderedDict
 
 
 class RepMLP(nn.Module):
@@ -43,13 +44,23 @@ class RepMLP(nn.Module):
         
         if not self.deploy and self.repconv_kernels is not None:
             for k in self.repconv_kernels:
-                repconv=nn.Sequential(
-                    nn.Conv2d(self.C,self.O,kernel_size=k,padding=(k-1)//2),
-                    nn.BatchNorm2d(self.O)
+                repconv=nn.Sequential(OrderedDict([
+                    ('conv',nn.Conv2d(self.C,self.O,kernel_size=k,padding=(k-1)//2, groups=fc3_groups,bias=False)),
+                    ('bn',nn.BatchNorm2d(self.O))
+                ])
+
                 )
                 self.__setattr__('repconv{}'.format(k),repconv)
                 
 
+    def _fuse_bn(self, conv_or_fc, bn):
+        std = (bn.running_var + bn.eps).sqrt()
+        t = bn.weight / std
+        if conv_or_fc.weight.ndim == 4:
+            t = t.reshape(-1, 1, 1, 1)
+        else:
+            t = t.reshape(-1, 1)
+        return conv_or_fc.weight * t, bn.bias - bn.running_mean * bn.weight / std
 
 
             
