@@ -181,13 +181,13 @@ class RepMLP(nn.Module):
 
 if __name__ == '__main__':
     N = 1
-    C = 8
-    H = 14
-    W = 14
+    C = 7
+    H = 7
+    W = 7
     h = 7
     w = 7
-    O = 8
-    groups = 4
+    O = 7
+    groups = 1
 
 
     x = torch.randn(N, C, H, W)
