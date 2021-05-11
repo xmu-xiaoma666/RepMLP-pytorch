@@ -1,6 +1,19 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
+from numpy import random
+
+def set_rand_seed(seed=1):
+    print("Random Seed: ", seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    # torch.backends.cudnn.enabled = False       
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True   # 保证每次返回得的卷积算法是确定的
 
 
 class RepMLP(nn.Module):
@@ -100,7 +113,8 @@ class RepMLP(nn.Module):
     def _convert_conv_to_fc(self, conv_kernel, conv_bias):
         I = torch.eye(self.C * self.h * self.w // self.fc3_groups).repeat(1, self.fc3_groups).reshape(self.C * self.h * self.w // self.fc3_groups, self.C, self.h, self.w).to(conv_kernel.device) 
         fc_k = F.conv2d(I, conv_kernel, padding=conv_kernel.size(2)//2, groups=self.fc3_groups)
-        fc_k = fc_k.reshape(self.O * self.h * self.w // self.fc3_groups, self.C * self.h * self.w).t()
+        fc_k = fc_k.reshape(self.C * self.h * self.w // self.fc3_groups, self.O * self.h * self.w).t()
+        # fc_k = fc_k.reshape(self.O * self.h * self.w // self.fc3_groups, self.C * self.h * self.w)
         fc_bias = conv_bias.repeat_interleave(self.h * self.w)
         return fc_k, fc_bias
 
@@ -181,18 +195,20 @@ class RepMLP(nn.Module):
 
 if __name__ == '__main__':
     N = 1
-    C = 7
-    H = 7
-    W = 7
+    C = 8
+    H = 14
+    W = 14
     h = 7
     w = 7
-    O = 7
-    groups = 1
+    O = 16
+    groups = 2
 
+
+    set_rand_seed(12)
 
     x = torch.randn(N, C, H, W)
     print('input shape is ', x.size())
-    repmlp = RepMLP(C, O, H=H, W=W, h=h, w=w, reparam_conv_k=(1,3,5), fc1_fc2_reduction=1, fc3_groups=groups, deploy=False)
+    repmlp = RepMLP(C, O, H=H, W=W, h=h, w=w, reparam_conv_k=(7,), fc1_fc2_reduction=1, fc3_groups=groups, deploy=False)
     repmlp.eval()
     for module in repmlp.modules():
         if isinstance(module, nn.BatchNorm2d) or isinstance(module, nn.BatchNorm1d):
