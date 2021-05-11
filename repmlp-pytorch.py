@@ -137,20 +137,20 @@ class RepMLP(nn.Module):
 
 
 
-    # def _conv_to_fc(self,weight,bias):
-    #     i_maxtrix=torch.eye(self.C*self.h*self.w//self.fc3_groups).repeat(1,self.fc3_groups).reshape(self.C*self.h*self.w//self.fc3_groups,self.C,self.h,self.w)
-    #     fc_weight=F.conv2d(i_maxtrix,weight=weight,bias=bias,padding=weight.shape[2]//2,groups=self.fc3_groups)
-    #     fc_weight=fc_weight.reshape(self.C*self.h*self.w//self.fc3_groups,-1)
-    #     fc_bias = bias.repeat_interleave(self.h * self.w)
-    #     return fc_weight,fc_bias
+    def _conv_to_fc(self,weight,bias):
+        i_maxtrix=torch.eye(self.C*self.h*self.w//self.fc3_groups).repeat(1,self.fc3_groups).reshape(self.C*self.h*self.w//self.fc3_groups,self.C,self.h,self.w)
+        fc_weight=F.conv2d(i_maxtrix,weight,padding=weight.shape[2]//2,groups=self.fc3_groups)
+        fc_weight=fc_weight.reshape(self.O*self.h*self.w//self.fc3_groups,-1).t()
+        fc_bias = bias.repeat_interleave(self.h * self.w)
+        return fc_weight,fc_bias
 
 
-    def _conv_to_fc(self,conv_kernel, conv_bias):
-        I = torch.eye(self.C * self.h * self.w // self.fc3_groups).repeat(1, self.fc3_groups).reshape(self.C * self.h * self.w // self.fc3_groups, self.C, self.h, self.w).to(conv_kernel.device) 
-        fc_k = F.conv2d(I, conv_kernel, padding=conv_kernel.size(2)//2, groups=self.fc3_groups)
-        fc_k = fc_k.reshape(self.O * self.h * self.w // self.fc3_groups, self.C * self.h * self.w).t()
-        fc_bias = conv_bias.repeat_interleave(self.h * self.w)
-        return fc_k, fc_bias
+    # def _conv_to_fc(self,conv_kernel, conv_bias):
+    #     I = torch.eye(self.C * self.h * self.w // self.fc3_groups).repeat(1, self.fc3_groups).reshape(self.C * self.h * self.w // self.fc3_groups, self.C, self.h, self.w).to(conv_kernel.device) 
+    #     fc_k = F.conv2d(I, conv_kernel, padding=conv_kernel.size(2)//2, groups=self.fc3_groups)
+    #     fc_k = fc_k.reshape(self.O * self.h * self.w // self.fc3_groups, self.C * self.h * self.w).t()
+    #     fc_bias = conv_bias.repeat_interleave(self.h * self.w)
+    #     return fc_k, fc_bias
 
 
     def _fuse_bn(self, conv_or_fc, bn):
@@ -192,7 +192,7 @@ class RepMLP(nn.Module):
             conv_out=conv_out.view(-1,self.h_part,self.w_part,self.O,self.h,self.w) #bs,h_part,w_part,O,h,w
             fc3_out+=conv_out
         fc3_out=fc3_out.permute(0,3,1,4,2,5)#bs,O,h_part,h,w_part,w
-        fc3_out=fc3_out.reshape(-1,self.C,self.H,self.W) #bs,O,H,W
+        fc3_out=fc3_out.reshape(-1,self.O,self.H,self.W) #bs,O,H,W
 
 
         return fc3_out
