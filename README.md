@@ -37,6 +37,9 @@ y=repmlp(x)
 
 ### RepVGG Usage
 
+![](./repvgg.png)
+
+
 ```python
 
 import torch
